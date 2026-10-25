@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Repo City</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1020; font-family: system-ui, sans-serif; }
+      canvas { display: block; }
+      [hidden] { display: none !important; }
+
+      /* ---------- top-left toolbar ---------- */
+      #ui {
+        position: fixed; top: 16px; left: 16px; z-index: 10;
+        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        max-width: calc(100vw - 400px);
+        background: rgba(11, 16, 32, 0.85); padding: 10px 12px;
+        border: 1px solid #2a3558; border-radius: 10px;
+      }
+      #ui input {
+        background: #151b2e; color: #fff; border: 1px solid #2a3558;
+        border-radius: 6px; padding: 8px 10px; width: 160px; outline: none;
+      }
+      #go {
+        background: #4b8bbe; color: #fff; border: 0; border-radius: 6px;
+        padding: 8px 14px; cursor: pointer; font-weight: 600;
+      }
+      #go:disabled { opacity: 0.5; cursor: wait; }
+      #status { color: #9fb0d9; font-size: 13px; }
+
+      #colorby { display: flex; align-items: center; gap: 4px; color: #9fb0d9; font-size: 12px; }
+      #colorby span { margin-right: 4px; }
+      #colorby button {
+        background: #151b2e; color: #9fb0d9; border: 1px solid #2a3558;
+        padding: 5px 10px; cursor: pointer; font-size: 12px; border-radius: 6px;
+      }
+      #colorby button.active { color: #fff; border-color: #4b8bbe; background: #1b2a4a; }
+      #colorby button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      /* ---------- legend ---------- */
+      #legend {
+        position: fixed; left: 16px; bottom: 16px; z-index: 10;
+        background: rgba(11, 16, 32, 0.85); border: 1px solid #2a3558; border-radius: 10px;
+        padding: 10px 12px; color: #c5d0f0; font-size: 12px; line-height: 1.6;
+      }
+      #legend .row { display: flex; align-items: center; gap: 8px; }
+      #legend .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+      #legend .gold { color: #ffd34d; width: 12px; text-align: center; }
+
+      /* ---------- hover tooltip ---------- */
+      #tooltip {
+        position: fixed; z-index: 20; display: none; pointer-events: none;
+        max-width: 280px; padding: 10px 12px;
+        background: rgba(11, 16, 32, 0.95); color: #e6ecff;
+        border: 1px solid #2a3558; border-radius: 8px;
+        font-size: 13px; line-height: 1.4;
+      }
+      #tooltip .name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+      #tooltip .lang { display: inline-flex; align-items: center; gap: 6px; color: #9fb0d9; }
+      #tooltip .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      #tooltip .desc { margin: 6px 0; color: #c5d0f0; }
+      #tooltip .meta { color: #9fb0d9; font-size: 12px; }
+      #tooltip .hint { margin-top: 6px; color: #6f81b3; font-size: 11px; }
+
+      /* ---------- side panel ---------- */
+      #panel {
+        position: fixed; top: 16px; right: 16px; bottom: 16px; width: 340px; z-index: 10;
+        display: flex; flex-direction: column;
+        background: rgba(11, 16, 32, 0.92); color: #e6ecff;
+        border: 1px solid #2a3558; border-radius: 12px; font-size: 13px;
+      }
+      #panel-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 14px; border-bottom: 1px solid #2a3558; font-weight: 700;
+      }
+      #panel-close { background: none; border: 0; color: #9fb0d9; font-size: 20px; cursor: pointer; line-height: 1; }
+      #panel-body { overflow-y: auto; padding: 14px; flex: 1; }
+      #panel-open {
+        position: fixed; top: 16px; right: 16px; z-index: 10;
+        background: rgba(11, 16, 32, 0.92); color: #e6ecff; border: 1px solid #2a3558;
+        border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 600;
+      }
+      @media (max-width: 760px) {
+        #ui { max-width: calc(100vw - 32px); }
+        #panel { top: auto; left: 16px; width: auto; height: 45vh; }
+        #panel-open { top: auto; bottom: 16px; }
+        #legend { display: none; }
+      }
+
+      .profile { display: flex; gap: 12px; align-items: center; margin-bottom: 4px; }
+      .avatar { width: 48px; height: 48px; border-radius: 50%; }
+      .pname { font-weight: 700; font-size: 15px; }
+      .plogin { color: #9fb0d9; }
+      .bigscore { margin-left: auto; text-align: right; font-size: 30px; font-weight: 800; line-height: 1; }
+      .bigscore small { display: block; margin-top: 4px; font-size: 11px; color: #9fb0d9; font-weight: 400; }
+      .badge {
+        display: inline-block; min-width: 18px; text-align: center; padding: 1px 6px;
+        border-radius: 5px; color: #0b1020; font-weight: 800; font-size: 12px;
+      }
+      .section {
+        margin: 18px 0 6px; font-size: 11px; letter-spacing: 0.06em;
+        text-transform: uppercase; color: #6f81b3;
+      }
+
+      /* start here */
+      .start {
+        display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 6px;
+        background: #1b2a4a; border-radius: 8px; border-left: 3px solid #ffd34d; cursor: pointer;
+      }
+      .start:hover { background: #22345c; }
+      .start .gold { color: #ffd34d; }
+      .start .info { flex: 1; min-width: 0; }
+      .start .rn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .start .sub { color: #9fb0d9; font-size: 12px; }
+
+      /* gaps */
+      .gap { padding: 8px 10px; background: #151b2e; border-radius: 8px; margin-bottom: 6px; }
+      .gap .t { font-weight: 600; }
+      .gap .c { color: #f0b429; font-size: 12px; }
+      .gap .tip { color: #9fb0d9; font-size: 12px; margin-top: 2px; }
+
+      /* filters */
+      .fsearch {
+        width: 100%; box-sizing: border-box; background: #151b2e; color: #fff;
+        border: 1px solid #2a3558; border-radius: 6px; padding: 7px 9px; outline: none; margin-bottom: 6px;
+      }
+      .frow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+      .fsel {
+        background: #151b2e; color: #e6ecff; border: 1px solid #2a3558;
+        border-radius: 6px; padding: 5px 6px; font-size: 12px; max-width: 150px;
+      }
+      .fmeta { display: flex; justify-content: space-between; align-items: center; color: #9fb0d9; font-size: 12px; margin-bottom: 6px; }
+      .linkbtn { background: none; border: 0; color: #4b8bbe; cursor: pointer; font-size: 12px; font-weight: 600; padding: 0; }
+
+      .sortbar { display: flex; gap: 6px; margin-bottom: 6px; }
+      .sortbar button {
+        background: #151b2e; color: #9fb0d9; border: 1px solid #2a3558;
+        border-radius: 14px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+      }
+      .sortbar button.active { color: #fff; border-color: #4b8bbe; background: #1b2a4a; }
+      .repo-row { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; }
+      .repo-row:hover { background: #1b2440; }
+      .repo-row .rn { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .repo-row .rs { color: #9fb0d9; width: 28px; text-align: right; }
+
+      /* detail view */
+      .back {
+        background: none; border: 0; color: #4b8bbe; cursor: pointer;
+        padding: 0; margin-bottom: 10px; font-size: 13px; font-weight: 600;
+      }
+      .dhead { display: flex; align-items: center; gap: 8px; }
+      .dhead .rn { font-weight: 700; font-size: 16px; flex: 1; word-break: break-word; }
+      .dmeta { color: #9fb0d9; font-size: 12px; margin-top: 4px; }
+      .ddesc { margin: 8px 0; color: #c5d0f0; }
+      .check { display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid #1e2748; }
+      .check .ic { width: 16px; text-align: center; font-weight: 800; }
+      .check .body { flex: 1; }
+      .check .tip { color: #9fb0d9; font-size: 12px; margin-top: 2px; }
+      .check .pts { color: #9fb0d9; font-size: 12px; }
+      .win { margin-top: 12px; padding: 10px; background: #1b2a4a; border-radius: 8px; }
+      .ghbtn {
+        display: inline-block; margin-top: 14px; padding: 8px 12px; background: #4b8bbe;
+        color: #fff; border-radius: 6px; text-decoration: none; font-weight: 600;
+      }
+      .note { margin-top: 16px; color: #6f81b3; font-size: 11px; line-height: 1.4; }
+    </style>
+  </head>
+  <body>
+    <div id="ui">
+      <input id="username" placeholder="GitHub username" value="Nishupathak" />
+      <button id="go">Build city</button>
+      <div id="colorby">
+        <span>Color by</span>
+        <button data-mode="language" class="active">Language</button>
+        <button data-mode="health" disabled>Health</button>
+      </div>
+      <span id="status"></span>
+    </div>
+
+    <div id="legend" hidden></div>
+    <div id="tooltip"></div>
+
+    <button id="panel-open" hidden>Health report</button>
+    <aside id="panel" hidden>
+      <div id="panel-head">
+        <span>Portfolio health</span>
+        <button id="panel-close" aria-label="Close panel">×</button>
+      </div>
+      <div id="panel-body"></div>
+    </aside>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
