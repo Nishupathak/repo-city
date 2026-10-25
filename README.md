@@ -19,27 +19,6 @@ Every repo becomes a building. Every building gets a health score, a personality
 
 ---
 
-## Table of contents
-
-- [Why Repo City](#why-repo-city)
-- [Features](#features)
-- [Screenshots](#screenshots)
-- [How it works](#how-it-works)
-  - [Architecture](#architecture)
-  - [What happens when you search](#what-happens-when-you-search)
-  - [From repo data to city](#from-repo-data-to-city)
-  - [The health score](#the-health-score)
-  - [AI classification and fallbacks](#ai-classification-and-fallbacks)
-- [Tech stack](#tech-stack)
-- [Getting started](#getting-started)
-- [Project structure](#project-structure)
-- [Design decisions and challenges](#design-decisions-and-challenges)
-- [Limitations](#limitations)
-- [Roadmap](#roadmap)
-- [License](#license)
-
----
-
 ## Why Repo City
 
 A GitHub profile is a grid of green squares and a list of repo names. It tells a recruiter almost nothing about how someone works, and it tells the developer nothing about what to fix.
@@ -66,37 +45,6 @@ Repo City turns a profile into something you can read at a glance, and then goes
 - **Interactive.** Hover for details, click a building or a list item for the full report, and the camera flies to the selected repo.
 
 ---
-
-## Screenshots
-
-> Screenshots live in [`docs/screenshots/`](docs/screenshots).
-
-<table>
-  <tr>
-    <td width="50%">
-      <img src="docs/screenshots/health-mode.png" alt="City colored by health grade with legend">
-      <p align="center"><b>Color by health.</b> Green to red buildings show where the weak spots are.</p>
-    </td>
-    <td width="50%">
-      <img src="docs/screenshots/repo-report.png" alt="Repo detail panel with a health checklist">
-      <p align="center"><b>Repo report.</b> A checklist with a tip for every missing item.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <img src="docs/screenshots/filters.png" alt="Filters dimming non-matching buildings">
-      <p align="center"><b>Search and filters.</b> Matching buildings stay bright, the rest fade out.</p>
-    </td>
-    <td width="50%">
-      <img src="docs/screenshots/tooltip.png" alt="Hover tooltip on a building">
-      <p align="center"><b>Hover tooltip.</b> Language, health, personality, stars and last push.</p>
-    </td>
-  </tr>
-</table>
-
----
-
-## How it works
 
 ### Architecture
 
@@ -256,11 +204,6 @@ git clone https://github.com/Nishupathak/repo-city.git
 cd repo-city
 npm install
 ```
-
-### Configure
-
-Copy `.env.example` to `.env` and fill it in:
-
 ```bash
 GITHUB_TOKEN=your-github-token
 GEMINI_API_KEY=your-gemini-key
@@ -269,11 +212,8 @@ GEMINI_API_KEY=your-gemini-key
 | Variable | Required | How to get it |
 |---|---|---|
 | `GITHUB_TOKEN` | Yes, for health scans | Go to [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new) and create a **fine-grained token** with **Public repositories (read-only)** and no other permissions. This raises GitHub's limit from 60 to 5,000 requests per hour. |
-| `GEMINI_API_KEY` | No | Get a free key at [aistudio.google.com](https://aistudio.google.com) ("Get API key"). No credit card needed. |
+| `GEMINI_API_KEY` | Yes | Get a free key at [aistudio.google.com](https://aistudio.google.com) ("Get API key"). No credit card needed. |
 | `ANTHROPIC_API_KEY` | No | From [console.anthropic.com](https://console.anthropic.com). Only used if Gemini is missing or fails. |
-| `GEMINI_MODEL` | No | Defaults to `gemini-flash-latest`. |
-
-> **Never commit your `.env` file.** It is listed in `.gitignore`. If a key is ever exposed, delete it and create a new one.
 
 ### Run
 
@@ -338,24 +278,6 @@ repo-city/
 - Only the 40 most recently pushed original repos are shown. Private repos are not visible.
 - Free-tier AI quotas are small. When they run out, classification falls back to rules.
 - There is no hosted demo yet. The app runs locally.
-
----
-
-## Roadmap
-
-- [ ] AI-written portfolio summary: strengths, gaps and what to build next
-- [ ] Detect tests and CI in subfolders
-- [ ] Real commit counts for building height
-- [ ] Shareable links (`?user=name`) and a hosted demo with rate limiting
-- [ ] Score history, to track improvement over time
-- [ ] Side-by-side comparison of two developers
-- [ ] Embeddable health badge for a profile README
-
----
-
-## License
-
-Released under the [MIT License](LICENSE).
 
 <div align="center">
 
