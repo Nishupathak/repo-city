@@ -278,9 +278,3 @@ repo-city/
 - Only the 40 most recently pushed original repos are shown. Private repos are not visible.
 - Free-tier AI quotas are small. When they run out, classification falls back to rules.
 - There is no hosted demo yet. The app runs locally.
-
-<div align="center">
-
-Built by [Nishu Pathak](https://github.com/Nishupathak)
-
-</div>
