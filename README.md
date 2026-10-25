@@ -13,7 +13,8 @@ Every repo becomes a building. Every building gets a health score, a personality
 ![Node](https://img.shields.io/badge/Node.js-20.19%2B-339933?logo=nodedotjs&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-<img src="docs/screenshots/city-overview.png" alt="Repo City showing a GitHub profile as a 3D city with the health panel open" width="900">
+<img src="<img width="1920" height="1080" alt="image src=https://github.com/user-attachments/assets/65cb6995-786f-4bad-9b23-abc35b1af47c" />
+" alt="Repo City showing a GitHub profile as a 3D city with the health panel open" width="900">
 
 </div>
 
